@@ -1,42 +1,43 @@
-![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
+# VGA clock with monochrome stylized segments
 
-# Tiny Tapeout Verilog Project Template
+___
 
-- [Read the documentation for project](docs/info.md)
+## Description
 
-## What is Tiny Tapeout?
+An ASIC design that displays a digital clock on a VGA screen, HH:MM format, with stylized 7 segments (custom angular variant of the [_Seamless_](https://michieldb.nl/other/segments/) segment design by Posy (Michiel de Boer)). The monochrome segments make it particularly suited for modded LCD panels, to get black and transparent pixels.
 
-Tiny Tapeout is an educational project that aims to make it easier and cheaper than ever to get your digital and analog designs manufactured on a real chip.
+![Render preview](docs/render_monitor.jpg)
 
-To learn more and get started, visit https://tinytapeout.com.
+## Tile preview
 
-## Set up your Verilog project
+___
 
-1. Add your Verilog files to the `src` folder.
-2. Edit the [info.yaml](info.yaml) and update information about your project, paying special attention to the `source_files` and `top_module` properties. If you are upgrading an existing Tiny Tapeout project, check out our [online info.yaml migration tool](https://tinytapeout.github.io/tt-yaml-upgrade-tool/).
-3. Edit [docs/info.md](docs/info.md) and add a description of your project.
-4. Adapt the testbench to your design. See [test/README.md](test/README.md) for more information.
+1x1 tile, 47% usage
 
-The GitHub action will automatically build the ASIC files using [LibreLane](https://www.zerotoasiccourse.com/terminology/librelane/).
+![GDS image](docs/GDS_preview.png)
 
-## Enable GitHub actions to build the results page
+View the GDS 3D simulation [here]() and navigate through the 3D tile preview [here]()
 
-- [Enabling GitHub Pages](https://tinytapeout.com/faq/#my-github-action-is-failing-on-the-pages-part)
+## Extended Description
 
-## Resources
+___
 
-- [FAQ](https://tinytapeout.com/faq/)
-- [Digital design lessons](https://tinytapeout.com/digital_design/)
-- [Learn how semiconductors work](https://tinytapeout.com/siliwiz/)
-- [Join the community](https://tinytapeout.com/discord)
-- [Build your design locally](https://www.tinytapeout.com/guides/local-hardening/)
+This ASIC design displays on a VGA monitor, with a 640x480 resolution, a monochrome digital clock. The time is displayed in the `HH:MM` format (24h) with stylized segmented digits, and can be set using 2 buttons (hold to increment), and an invert pin inverts the display. It either works in standalone mode (time obtained from the `25.175 MHz` core frequency) or with an external `1 Hz` clock (to get more precision with an RTC)
 
-## What next?
+**Internally:** The `px_x` and `px_y` counters in the VGA timing generation for Hsync and Vsync are the screen coordinates the procedural segment construction uses to draw the segments pixel after pixel. The number to display on each digit is decided with the current `HH:MM` values, and the `1 Hz` tick that updates the time is either derived from the `25.175 MHz` core clock or from an edge-detected external clock.
 
-- [Submit your design to the next shuttle](https://app.tinytapeout.com/).
-- Edit [this README](README.md) and explain your design, how it works, and how to test it.
-- Share your project on your social network of choice:
-  - LinkedIn [#tinytapeout](https://www.linkedin.com/search/results/content/?keywords=%23tinytapeout) [@TinyTapeout](https://www.linkedin.com/company/100708654/)
-  - Mastodon [#tinytapeout](https://chaos.social/tags/tinytapeout) [@matthewvenn](https://chaos.social/@matthewvenn)
-  - X (formerly Twitter) [#tinytapeout](https://twitter.com/hashtag/tinytapeout) [@tinytapeout](https://twitter.com/tinytapeout)
-  - Bluesky [@tinytapeout.com](https://bsky.app/profile/tinytapeout.com)
+## How to test
+
+___
+
+After hooking up a VGA monitor and the few additional hardware (see below), with the chip running at `25.175 MHz`, the monitor should show `00:00` upon reset. Holding the buttons `H++` (`ui_in[3]`) or `M++` (`ui_in[2]`) increments the hours or minutes every `500 ms`. Release to set the time. Toggling the invert pin (`ui_in[4]`) inverts the B&W image. To run in standalone mode (`1 Hz` tick derived from the `25.175 MHz` clock), the `clock select` pin needs to be set to `LOW` (`ui_in[1]`), and when using an external clock (`clock select` to `HIGH`), a `1 Hz` clock needs to be provided on `ui_in[0]`
+
+## External hardware
+
+___
+
+The VGA pinout is the same as the Tiny VGA PMOD for compatibility, even though only 3 signals are required: `Hsync`, `Vsync` and `BW_out`. Thus `BW_out` is directly outputted on all color channels. 2 buttons and 2 switches for the clock configuration are required too, and a `1 Hz` external clock (from an RTC for example) is optional. 
+
+I'm planning on making a custom PCB that includes everything required to get a clock up and running: mezzanine connector for the COB ASIC, VGA connector with signals attenuated down to 0.7V on each color channel, 25.175 MHz oscillator, buttons, RTC...
+
+
