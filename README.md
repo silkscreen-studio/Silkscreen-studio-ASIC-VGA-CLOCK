@@ -18,7 +18,7 @@ ___
 
 ![GDS image](docs/GDS_preview.png)
 
-Navigate through the 3D tile preview [here](https://gds-viewer.tinytapeout.com/?model=https://silkscreen-studio.github.io/Silkscreen-studio-ASIC-VGA-CLOCK/tinytapeout.oas&pdk=gf180mcuD) and watch the GDS 3D simulation [here](https://gds-explorer.tinytapeout.com/viewer?file=https://silkscreen-studio.github.io/Silkscreen-studio-ASIC-VGA-CLOCK/tinytapeout.oas&pdk=gf180mcuD): Enable the VGA monitor to see each line being drawn one after another. For a more accurate simulation (time-wise) try the verilog code on [VGA Playground](https://vga-playground.com) (replace the default code with the [`project.v`](src/project.v) code in the editor)
+Navigate through the 3D tile preview [here](https://gds-viewer.tinytapeout.com/?model=https://silkscreen-studio.github.io/Silkscreen-studio-ASIC-VGA-CLOCK/tinytapeout.oas&pdk=gf180mcuD) and watch the GDS 3D simulation [here](https://gds-explorer.tinytapeout.com/viewer?file=https://silkscreen-studio.github.io/Silkscreen-studio-ASIC-VGA-CLOCK/tinytapeout.oas&pdk=gf180mcuD): Enable the VGA monitor to see each line being drawn one after another. For a more accurate simulation (time-wise) try the verilog code on [VGA Playground](https://vga-playground.com/?repo=https://github.com/silkscreen-studio/Silkscreen-studio-ASIC-VGA-CLOCK)
 
 <br>
 
