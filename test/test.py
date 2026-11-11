@@ -18,7 +18,6 @@ checks = {
 }
 
 hsync, px_out_6, px_out_5, px_out_4, vsync, px_out_3, px_out_2, px_out_1 = 7, 6, 5, 4, 3, 2, 1, 0
-gl_test = False
 
 def get_uo_out (dut, signal) :
     return (int(dut.uo_out.value) >> signal) & 1
@@ -168,6 +167,8 @@ async def log_loading_bar (dut):        # just for the fun of it
 @cocotb.test ()
 
 async def test_vga_clock (dut):
+    gl_test = False
+    
     dut._log.info ("Start")
 
     clock = Clock (dut.clk, 40, unit="ns")
