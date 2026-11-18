@@ -161,7 +161,7 @@ async def clock_simulation (dut) :
 
 async def log_loading_bar (dut):        # just for the fun of it
     for i in range (1, 101) :
-        await ClockCycles (dut.clk, 42480)
+        await ClockCycles (dut.clk, 84000)
         dut._log.info (f"  {i}%  [ {(10 - i // 10) * ' ' + i // 10 * '_'} ]")
 
 @cocotb.test ()
@@ -188,12 +188,35 @@ async def test_vga_clock (dut):
     cocotb.start_soon (falling_edge_interval (dut, "LW"))
     cocotb.start_soon (falling_edge_interval (dut, "FH"))
     cocotb.start_soon (px_out_inactive (dut))
+
+    await ClockCycles (dut.clk, 420000)
+    dut.uio_in [0].value = 1       # mirroring the screen (horizontal)
+    await ClockCycles (dut.clk, 420000)
+    dut.uio_in [1].value = 1       # mirroring the screen (vertically)
+    await ClockCycles (dut.clk, 840000)
+    dut.uio_in [2].value = 1       # enabling the Seamless font fix
+    dut.uio_in [3].value = 1
+
+    await ClockCycles (dut.clk, 420000) 
+    dut.ui_in [5].value = 1       # Changing the clock format
+
+    await ClockCycles (dut.clk, 420000) 
+    dut.ui_in [7].value = 1       # Enabling the digit shadows
     
     await ClockCycles (dut.clk, 1260000)
 
-    dut.ui_in [4].value = 1
+    dut.ui_in [6].value = 1       # now the screen is inverted
     cocotb.start_soon (invert_border_screen (dut))
     await ClockCycles (dut.clk, 1260000)
+
+    dut.uio_in [0].value = 0    # back to normal...
+    dut.uio_in [1].value = 0  
+    dut.uio_in [2].value = 0
+    dut.uio_in [3].value = 0
+    dut.ui_in [5].value = 0
+    dut.ui_in [7].value = 0 
+
+    await ClockCycles (dut.clk, 1260000)    
 
     dut.ui_in [1].value = 1       # now the clock is externaly driven by ui_in [0]
 
