@@ -47,17 +47,27 @@ wire video_active = px_x < H_DISPLAY && px_y < V_DISPLAY;
 wire h_maxxed = px_x == H_MAX || ~rst_n;
 wire v_maxxed = px_y == V_MAX || ~rst_n;
 
-always @(posedge clk) begin
-    hsync <= ~(px_x >= H_SYNC_START && px_x <= H_SYNC_END);
-    if (h_maxxed) px_x <= 0;
-    else px_x <= px_x + 1;
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n) begin
+        px_x <= 10'b0;
+    end
+    else begin
+        hsync <= ~(px_x >= H_SYNC_START && px_x <= H_SYNC_END);
+        if (h_maxxed) px_x <= 0;
+        else px_x <= px_x + 1;
+    end
 end
 
-always @(posedge clk) begin
-    vsync <= ~(px_y >= V_SYNC_START && px_y <= V_SYNC_END);
-    if (h_maxxed) begin
-        if (v_maxxed) px_y <= 0;
-        else px_y <= px_y + 1;
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n) begin
+        px_y <= 10'b0;
+    end
+    else begin
+        vsync <= ~(px_y >= V_SYNC_START && px_y <= V_SYNC_END);
+        if (h_maxxed) begin
+            if (v_maxxed) px_y <= 0;
+            else px_y <= px_y + 1;
+        end
     end
 end
 
