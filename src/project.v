@@ -50,6 +50,7 @@ wire v_maxxed = px_y == V_MAX || ~rst_n;
 always @(posedge clk or negedge rst_n) begin
     if (~rst_n) begin
         px_x <= 10'b0;
+        hsync <= 1'b1;
     end
     else begin
         hsync <= ~(px_x >= H_SYNC_START && px_x <= H_SYNC_END);
@@ -61,6 +62,7 @@ end
 always @(posedge clk or negedge rst_n) begin
     if (~rst_n) begin
         px_y <= 10'b0;
+        vsync <= 1'b1;
     end
     else begin
         vsync <= ~(px_y >= V_SYNC_START && px_y <= V_SYNC_END);
