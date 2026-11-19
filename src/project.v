@@ -65,7 +65,7 @@ assign uo_out = {hsync, {3{BW_out_faint}}, vsync, {3{BW_out}}};        // to sta
 
 assign uio_out = 0;
 assign uio_oe = 0;
-wire _unused_ok = &{ena, uio_in [7:4]};
+wire _unused_ok = &{ena, uio_in [7:5]};
 
 reg [24:0] counter_25M_to_1;
 reg tick_1Hz_int;
@@ -259,8 +259,8 @@ always @(posedge clk) begin
 end
 wire flip_horiz = flipflop_2_flip_horiz;
 
-wire [9:0] px_x_m = flip_horiz ? 639 - px_x : px_x;
-wire [9:0] px_y_m = flip_vert ? 479 - px_y : px_y;
+wire [9:0] px_x_m = flip_horiz ? 639 - px_x : px_x + glitch_offset;
+wire [9:0] px_y_m = flip_vert ? 479 - px_y : px_y + glitch_offset;
 
 wire HH_MM_SS = flipflop_2_HH_MM_SS;
 always @(posedge clk) begin
@@ -383,31 +383,53 @@ always @(*) begin
 end
 
 wire invert_pin = ui_in [6];
-
 reg flipflop_1_invert;
 reg flipflop_2_invert;
-
 always @(posedge clk) begin
     flipflop_1_invert <= invert_pin;
     flipflop_2_invert <= flipflop_1_invert;
 end
-
 wire invert = flipflop_2_invert;
 
 wire enable_shadow_pin = ui_in [7];
-
 reg flipflop_1_enable_shadow;
 reg flipflop_2_enable_shadow;
-
 always @(posedge clk) begin
     flipflop_1_enable_shadow <= enable_shadow_pin;
     flipflop_2_enable_shadow <= flipflop_1_enable_shadow;
 end
-
 wire enable_shadow = flipflop_2_enable_shadow;
 
+wire styling_mode_pin = uio_in [4];
+reg flipflop_1_styling_mode;
+reg flipflop_2_styling_mode;
 always @(posedge clk) begin
-  BW_out <= ((video_active) && (displayable_digit ^ invert));
-  BW_out_faint <= (enable_shadow) ? ((video_active) && (displayable_faint_digit ^ invert)) : ((video_active) && (displayable_digit ^ invert));
+    flipflop_1_styling_mode <= styling_mode_pin;
+    flipflop_2_styling_mode <= flipflop_1_styling_mode;
+end
+wire styling_mode_btn = flipflop_2_styling_mode;
+
+reg [3:0] mode_style;
+
+always @(posedge clk or negedge rst_n) begin
+  if (~rst_n) begin
+    mode_style <= 4'd0;
+  end
+  else if (tick_1Hz && styling_mode_btn) mode_style <= mode_style + 1;
+end
+
+wire LED_grid_layer = mode_style [1] ? (loc_px_y [1]) && (loc_px_x [1]) : (loc_px_y [1] || loc_px_y [0]) && (loc_px_x [1] || loc_px_x [0]);
+
+wire LED_grid_pattern =  mode_style [0] ? LED_grid_layer : 1'b1;
+
+wire sweep_blackout = px_y [8] == counter_25M_to_1 [0];
+wire [1:0] base_glitch_offset = (px_x [3:1] + counter_25M_to_1 [7]) + 2 * sweep_blackout + px_y [3] + counter_25M_to_1 [14] + (counter_25M_to_1 [13] == px_y [3]) + counter_25M_to_1 [6] + (px_y [1] == counter_25M_to_1 [10]) + (loc_px_y [5] == px_x [8]);
+
+wire [1:0] glitch_offset =  mode_style [2] ? base_glitch_offset [0] :  
+                            mode_style [3] ? base_glitch_offset [1:0] : 2'b00;
+
+always @(posedge clk) begin
+  BW_out <= ((video_active) && ((LED_grid_pattern && displayable_digit) ^ invert));
+  BW_out_faint <= (enable_shadow) ? ((video_active) && ((LED_grid_pattern && displayable_faint_digit) ^ invert)) : ((video_active) && ((LED_grid_pattern && displayable_digit)) ^ invert);
 end
 endmodule
